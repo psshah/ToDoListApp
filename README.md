@@ -8,6 +8,8 @@ Completed user stories:
 - User can add an item to the list using the textbox and button at the bottom of the main page.
 - User can click on an item to bring up a page which allows editing that item.
 - User can hold an item to remove it from the list.
+- Saves the list of items and displays it when the app is opened again.
+
 
 Walkthrough of all user stories:
 
