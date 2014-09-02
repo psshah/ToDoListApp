@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Locale;
 
 import org.apache.commons.io.FileUtils;
 
@@ -12,6 +13,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,7 +30,9 @@ public class MainDisplay extends Activity {
 	ArrayAdapter<String> itemsAdapter;
 	EditText etNewItem;
 	private final int REQUEST_CODE = 20;
-	
+	TextToSpeech tts;
+	String text;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,8 +48,56 @@ public class MainDisplay extends Activity {
         lvItems = (ListView)findViewById(R.id.lvItems);
         lvItems.setAdapter(itemsAdapter);
         
+        intializeTextToSpeech();
         setupListViewListener();
     }
+
+
+    private void intializeTextToSpeech() {
+		// TODO Auto-generated method stub
+    	tts = new TextToSpeech(MainDisplay.this, new TextToSpeech.OnInitListener() {
+			@Override
+			public void onInit(int status) {
+				// TODO Auto-generated method stub
+				if(status == TextToSpeech.SUCCESS) {
+					int result = tts.setLanguage(Locale.US);
+					if(result==TextToSpeech.LANG_MISSING_DATA || 
+							result==TextToSpeech.LANG_NOT_SUPPORTED) {
+						//error
+					}
+				}
+				else {
+					//error	
+				}
+			}
+		});
+
+	}
+
+    @Override
+    protected void onStop() {
+        if(tts != null){
+            tts.stop();
+            tts.shutdown();
+        }
+        super.onStop();
+    }
+    
+    @Override
+    protected void onStart() {
+        if(tts == null){
+        	intializeTextToSpeech();
+        }
+        super.onStart();
+    }
+
+
+    @Override
+    protected void onResume() {
+	    intializeTextToSpeech();
+        super.onResume();
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -74,6 +126,26 @@ public class MainDisplay extends Activity {
 		saveItems();
 		//mySaveItems();
     }
+
+
+    public void readText(View v) {
+    	convertTextToSpeech();
+    }
+    
+    public void convertTextToSpeech() {
+    	for(int i=0; i<items.size(); i++)
+    	{
+    		text = items.get(i).toString();
+	        if(text==null || "".equals(text))
+	        {
+	            text = "Content not available";
+	            tts.speak(text, TextToSpeech.QUEUE_ADD, null);
+	        }else {
+	            tts.speak(text, TextToSpeech.QUEUE_ADD, null);
+	        }
+    	}
+    }
+
     
     public void setupListViewListener() {
     	lvItems.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
@@ -135,7 +207,7 @@ public class MainDisplay extends Activity {
 			e.printStackTrace();
 		}
     }
-    
+
     
     /* Another implementation of save items */
     public void mySaveItems() {
